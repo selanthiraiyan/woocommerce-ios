@@ -15,6 +15,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
                                                        totalWithTaxes: "$104.30",
                                                        taxAmount: "$4.3",
                                                        taxLines: [])
+
         // When
         viewModel.noteViewModel.newNote = "Updated note"
 
@@ -44,18 +45,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
 
     func test_provided_amount_gets_properly_formatted() {
         // Given
-        let mockStores = MockStoresManager(sessionManager: .testingInstance)
-        mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
-            switch action {
-            case let .getSimplePaymentsTaxesToggleState(_, onCompletion):
-                onCompletion(.success(false)) // Keep the taxes toggle turned off
-            case .setSimplePaymentsTaxesToggleState:
-                break // No op
-            default:
-                XCTFail("Unexpected action: \(action)")
-            }
-        }
-
+        let mockStores = createMockStore(taxesToggleState: false)
         let currencyFormatter = CurrencyFormatter(currencySettings: CurrencySettings()) // Default is US.
         let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
                                                        totalWithTaxes: "104.30",
@@ -77,6 +67,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
                                                        taxAmount: "$4.3",
                                                        taxLines: [],
                                                        currencyFormatter: currencyFormatter)
+
         // When
         viewModel.enableTaxes = true
 
@@ -93,6 +84,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
                                                        taxAmount: "4.3",
                                                        taxLines: [],
                                                        currencyFormatter: currencyFormatter)
+
         // When & Then
         XCTAssertEqual(viewModel.taxAmount, "$4.30")
     }
@@ -105,6 +97,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
                                                        taxAmount: "$4.3",
                                                        taxLines: [],
                                                        currencyFormatter: currencyFormatter)
+
         // When & Then
         XCTAssertEqual(viewModel.taxRate, "4.30")
     }
@@ -413,18 +406,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
 
     func test_noteAdded_event_is_tracked_after_editing_note() {
         // Given
-        let mockStores = MockStoresManager(sessionManager: .testingInstance)
-        mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
-            switch action {
-            case let .getSimplePaymentsTaxesToggleState(_, onCompletion):
-                onCompletion(.success(true))
-            case .setSimplePaymentsTaxesToggleState:
-                break // No op
-            default:
-                XCTFail("Unexpected action: \(action)")
-            }
-        }
-
+        let mockStores = createMockStore(taxesToggleState: true)
         let mockAnalytics = MockAnalyticsProvider()
         let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "1.0",
                                                        totalWithTaxes: "1.0",
@@ -446,18 +428,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
 
     func test_taxesToggled_event_is_tracked_after_switching_taxes_toggle() {
         // Given
-        let mockStores = MockStoresManager(sessionManager: .testingInstance)
-        mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
-            switch action {
-            case let .getSimplePaymentsTaxesToggleState(_, onCompletion):
-                onCompletion(.success(false))
-            case .setSimplePaymentsTaxesToggleState:
-                break // No op
-            default:
-                XCTFail("Unexpected action: \(action)")
-            }
-        }
-
+        let mockStores = createMockStore(taxesToggleState: false)
         let mockAnalytics = MockAnalyticsProvider()
         let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "1.0",
                                                        totalWithTaxes: "1.0",
@@ -513,17 +484,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
 
     func test_taxes_toggle_state_is_properly_loaded() {
         // Given
-        let mockStores = MockStoresManager(sessionManager: .testingInstance)
-        mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
-            switch action {
-            case let .getSimplePaymentsTaxesToggleState(_, onCompletion):
-                onCompletion(.success(true))
-            case .setSimplePaymentsTaxesToggleState:
-                break // No op
-            default:
-                XCTFail("Unexpected action: \(action)")
-            }
-        }
+        let mockStores = createMockStore(taxesToggleState: true)
 
         // When
         let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "1.0",
@@ -544,6 +505,7 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
                                                        taxAmount: "0.0",
                                                        taxLines: [],
                                                        stores: mockStores)
+
         // When
         let stateStored: Bool = waitFor { promise in
             mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
@@ -560,5 +522,27 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
 
         // Then
         XCTAssertTrue(stateStored)
+    }
+}
+
+// MARK: Private helpers
+//
+private extension SimplePaymentsSummaryViewModelTests {
+
+    /// Creates `MockStoresManager` for mocking `AppSettingsAction` in tests
+    ///
+    func createMockStore(taxesToggleState: Bool) -> MockStoresManager {
+        let mockStores = MockStoresManager(sessionManager: .testingInstance)
+        mockStores.whenReceivingAction(ofType: AppSettingsAction.self) { action in
+            switch action {
+            case let .getSimplePaymentsTaxesToggleState(_, onCompletion):
+                onCompletion(.success(taxesToggleState))
+            case .setSimplePaymentsTaxesToggleState:
+                break // No op
+            default:
+                XCTFail("Unexpected action: \(action)")
+            }
+        }
+        return mockStores
     }
 }
