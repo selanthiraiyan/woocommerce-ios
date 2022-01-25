@@ -182,6 +182,106 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.showChargeTaxesToggle)
     }
 
+    func test_showTaxesSection_is_false_when_enableTaxes_is_false_and_taxLinesInSimplePayments_feature_flag_is_off() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: false)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: false)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [
+                                                        SimplePaymentsSummaryViewModel.TaxLine(id: 1,
+                                                                                               title: "State",
+                                                                                               value: "4.23")
+                                                       ],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertFalse(viewModel.showTaxesSection)
+    }
+
+    func test_showTaxesSection_is_true_when_enableTaxes_is_true_and_taxLinesInSimplePayments_feature_flag_is_off() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: true)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: false)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [
+                                                        SimplePaymentsSummaryViewModel.TaxLine(id: 1,
+                                                                                               title: "State",
+                                                                                               value: "4.23")
+                                                       ],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertTrue(viewModel.showTaxesSection)
+    }
+
+    func test_showTaxesSection_is_false_when_enableTaxes_is_false_and_taxLinesInSimplePayments_feature_flag_is_on_and_when_taxLines_are_empty() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: false)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: true)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertFalse(viewModel.showTaxesSection)
+    }
+
+    func test_showTaxesSection_is_false_when_enableTaxes_is_false_and_taxLinesInSimplePayments_feature_flag_is_on_and_when_taxLines_are_not_empty() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: false)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: true)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [
+                                                        SimplePaymentsSummaryViewModel.TaxLine(id: 1,
+                                                                                               title: "State",
+                                                                                               value: "4.23")
+                                                       ],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertFalse(viewModel.showTaxesSection)
+    }
+
+    func test_showTaxesSection_is_false_when_enableTaxes_is_true_and_taxLinesInSimplePayments_feature_flag_is_on_and_when_taxLines_are_empty() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: true)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: true)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertFalse(viewModel.showTaxesSection)
+    }
+
+    func test_showTaxesSection_is_true_when_enableTaxes_is_true_and_taxLinesInSimplePayments_feature_flag_is_on_and_when_taxLines_are_not_empty() {
+        // Given
+        let mockStores = createMockStore(taxesToggleState: true)
+        let featureFlagService = MockFeatureFlagService(isTaxLinesInSimplePaymentsOn: true)
+        let viewModel = SimplePaymentsSummaryViewModel(providedAmount: "100",
+                                                       totalWithTaxes: "104.30",
+                                                       taxAmount: "$4.3",
+                                                       taxLines: [
+                                                        SimplePaymentsSummaryViewModel.TaxLine(id: 1,
+                                                                                               title: "State",
+                                                                                               value: "4.23")
+                                                       ],
+                                                       stores: mockStores,
+                                                       featureFlagService: featureFlagService)
+        // Then
+        XCTAssertTrue(viewModel.showTaxesSection)
+    }
+
     func test_taxLines_is_empty_when_Order_does_not_have_taxes() {
         // Given
         let order = Order.fake().copy(taxes: [])
