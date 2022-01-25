@@ -133,21 +133,14 @@ final class SimplePaymentsSummaryViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.showTaxBreakup)
     }
 
-    func test_taxLines_has_a_zero_TaxLine_value_when_Order_does_not_have_taxes() {
+    func test_taxLines_is_empty_when_Order_does_not_have_taxes() {
         // Given
         let order = Order.fake().copy(taxes: [])
-        let currencyFormatter = CurrencyFormatter(currencySettings: CurrencySettings()) // Default is US.
         let viewModel = SimplePaymentsSummaryViewModel(order: order,
-                                                       providedAmount: "100",
-                                                       currencyFormatter: currencyFormatter)
+                                                       providedAmount: "100")
 
         // Then
-        XCTAssertTrue(viewModel.taxLines.count == 1)
-
-        let title = "\(NSLocalizedString("Tax", comment: "")) (0.00%)"
-        XCTAssertEqual(viewModel.taxLines[0].title, title)
-
-        XCTAssertEqual(viewModel.taxLines[0].value, "$0.00")
+        XCTAssertTrue(viewModel.taxLines.isEmpty)
     }
 
     func test_taxLines_is_not_empty_when_Order_has_taxes() {
