@@ -321,8 +321,5 @@ private extension SimplePaymentsSummaryViewModel {
     enum Localization {
         static let updateError = NSLocalizedString("There was an error updating the order",
                                                    comment: "Notice text after failing to update a simple payments order.")
-        static let tax = NSLocalizedString("Tax",
-                                             comment: "Tax label for the tax detail row.")
-
     }
 }
